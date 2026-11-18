@@ -37,8 +37,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<SettingsViewModel>();
         builder.Services.AddSingleton<SettingsPage>();
 
-#if DEBUG
         builder.Logging.AddDebug();
+#if DEBUG
+        
 #endif
         return builder.Build();
     }
