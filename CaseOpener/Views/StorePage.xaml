@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CaseOpener.ViewModels"
+             xmlns:conv="clr-namespace:CaseOpener.Converters"
+             xmlns:views="clr-namespace:CaseOpener.Views"
+             x:Class="CaseOpener.Views.StorePage"
+             x:DataType="vm:StoreViewModel"
+             Title="Store"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BgLight}, Dark={StaticResource BgDark}}"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <conv:RarityToBrushConverter x:Key="RarityBrush" />
+        <conv:RarityToColorConverter x:Key="RarityColor" />
+        <conv:RarityToGlowConverter x:Key="RarityGlow" />
+    </ContentPage.Resources>
+
+    <Grid>
+
+        <!-- ═════════ STORE ═════════ -->
+        <Grid RowDefinitions="Auto,Auto,*" RowSpacing="16" Padding="24,20,24,0">
+
+            <!-- Header: title + wallet -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Case Store" Style="{StaticResource PageTitle}" />
+                    <Label Text="{Binding CountText}" Style="{StaticResource Muted}" />
+                </VerticalStackLayout>
+
+                <Border Grid.Column="1" Style="{StaticResource ChipBorder}" VerticalOptions="Start"
+                        Stroke="{AppThemeBinding Light={StaticResource AccentBrushLight}, Dark={StaticResource AccentBrushDark}}">
+                    <Label Text="{Binding BalanceText}" TextColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
+                           FontAttributes="Bold" FontSize="16" />
+                </Border>
+            </Grid>
+
+            <!-- Search + filter chips -->
+            <VerticalStackLayout Grid.Row="1" Spacing="12">
+                <Border Style="{StaticResource ChipBorder}" Padding="16,0" HorizontalOptions="Fill">
+                    <Entry Placeholder="Search cases…" Text="{Binding SearchText}"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                           PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                           BackgroundColor="Transparent" />
+                </Border>
+
+                <CollectionView ItemsSource="{Binding Filters}" HeightRequest="42"
+                                SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FilterChipViewModel">
+                            <Border Style="{StaticResource ChipBorder}">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource AccentBrushLight}, Dark={StaticResource AccentBrushDark}}" />
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:StoreViewModel}}, x:DataType=vm:StoreViewModel, Path=SelectFilterCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Label Text="{Binding Label}" FontSize="13" FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource AccentTextLight}, Dark={StaticResource AccentTextDark}}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- Case grid: every tile is a button that opens the preview -->
+            <CollectionView x:Name="CaseGrid" Grid.Row="2" ItemsSource="{Binding Cases}"
+                            SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="4"
+                                     HorizontalItemSpacing="14" VerticalItemSpacing="14" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="24" Color="Transparent" />
+                </CollectionView.Footer>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CaseCardViewModel">
+                        <Border Style="{StaticResource TileBorder}" Padding="0">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:StoreViewModel}}, x:DataType=vm:StoreViewModel, Path=OpenPreviewCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+
+                            <Grid RowDefinitions="140,Auto">
+                                <!-- Art area, tinted by the case's best rarity -->
+                                <Grid Grid.Row="0" Background="{Binding TopRarity, Converter={StaticResource RarityGlow}}">
+                                    <Label Text="📦" FontSize="54" HorizontalOptions="Center"
+                                           VerticalOptions="Center" Opacity="0.9" />
+                                    <Image Source="{Binding ImageFile}" Aspect="AspectFit" Margin="16" />
+                                    <BoxView HeightRequest="3" VerticalOptions="End"
+                                             Color="{Binding TopRarity, Converter={StaticResource RarityColor}}" />
+                                </Grid>
+
+                                <VerticalStackLayout Grid.Row="1" Padding="14,12,14,14" Spacing="6">
+                                    <Label Text="{Binding Name}" Style="{StaticResource CardTitle}" />
+                                    <Label Text="{Binding MetaLine}" Style="{StaticResource Muted}"
+                                           LineBreakMode="TailTruncation" MaxLines="1" />
+                                    <Label Text="{Binding PriceText}" TextColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
+                                           FontAttributes="Bold" FontSize="14" Margin="0,4,0,0" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+        <!-- ═════════ CASE PREVIEW OVERLAY ═════════ -->
+        <Grid IsVisible="{Binding IsPreviewOpen}">
+            <views:CasePreviewView BindingContext="{Binding Preview}" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:CaseOpener.Views"
+       x:Class="CaseOpener.AppShell"
+       FlyoutBehavior="Disabled"
+       BackgroundColor="{AppThemeBinding Light={StaticResource BgLight}, Dark={StaticResource BgDark}}"
+       Shell.TabBarBackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}"
+       Shell.TabBarForegroundColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
+       Shell.TabBarTitleColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
+       Shell.TabBarUnselectedColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}">
+
+    <!-- ContentTemplate lets Shell build each page through DI, and only when first shown. -->
+    <TabBar>
+        <ShellContent Title="Store" Route="store"
+                      ContentTemplate="{DataTemplate views:StorePage}" />
+        <ShellContent Title="Inventory" Route="inventory"
+                      ContentTemplate="{DataTemplate views:InventoryPage}" />
+        <ShellContent Title="Settings" Route="settings"
+                      ContentTemplate="{DataTemplate views:SettingsPage}" />
+    </TabBar>
+</Shell>

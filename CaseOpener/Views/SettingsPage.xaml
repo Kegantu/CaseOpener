@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CaseOpener.ViewModels"
+             x:Class="CaseOpener.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="Settings"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BgLight}, Dark={StaticResource BgDark}}"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,20,24,32" Spacing="28">
+
+            <Label Text="Settings" Style="{StaticResource PageTitle}" />
+
+            <!-- Appearance -->
+            <VerticalStackLayout Spacing="12">
+                <Label Text="APPEARANCE" Style="{StaticResource Muted}" FontAttributes="Bold" />
+
+                <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding ThemeOptions}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ThemeOptionViewModel">
+                            <Border Style="{StaticResource TileBorder}" Padding="18,14">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource AccentBrushLight}, Dark={StaticResource AccentBrushDark}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, x:DataType=vm:SettingsViewModel, Path=SelectThemeCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding Title}" Style="{StaticResource CardTitle}" />
+                                        <Label Text="{Binding Description}" Style="{StaticResource Muted}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1" Text="●" FontSize="18" VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}" IsVisible="{Binding IsSelected}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Deep links -->
+            <VerticalStackLayout Spacing="12">
+                <Label Text="DEEP LINKS" Style="{StaticResource Muted}" FontAttributes="Bold" />
+                <Label Style="{StaticResource Muted}"
+                       Text="Links open a screen straight from outside the app. Try one here (it takes the same path as a link from a browser):&#10;caseopener://case/{id}  – ids: revolution, dreams, recoil, kilowatt, dust2, souvenir-mirage&#10;caseopener://inventory&#10;caseopener://settings" />
+
+                <Border Style="{StaticResource ChipBorder}" Padding="16,0">
+                    <Entry Text="{Binding DeepLinkText}" Placeholder="caseopener://case/revolution"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                           PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                           BackgroundColor="Transparent" />
+                </Border>
+
+                <Button Text="Open link" Command="{Binding OpenDeepLinkCommand}"
+                        Style="{StaticResource PrimaryButton}" HeightRequest="44" />
+
+                <Label Text="{Binding DeepLinkStatus}" Style="{StaticResource Muted}" />
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

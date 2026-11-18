@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Colour palette for both themes. Every colour exists twice (…Light / …Dark); pages pick the right one with
+     {AppThemeBinding Light={StaticResource XLight}, Dark={StaticResource XDark}}.
+     Must be merged BEFORE CsTheme.xaml in App.xaml. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ===== Light ===== -->
+    <Color x:Key="BgLight">#F6F8FA</Color>
+    <Color x:Key="SurfaceLight">#FFFFFF</Color>
+    <Color x:Key="SurfaceHoverLight">#EEF1F5</Color>
+    <Color x:Key="BorderLight">#D0D7DE</Color>
+    <Color x:Key="TextPrimaryLight">#1F2328</Color>
+    <Color x:Key="TextMutedLight">#656D76</Color>
+    <!-- darker accent so orange text stays readable on white -->
+    <Color x:Key="AccentLight">#B45F06</Color>
+    <Color x:Key="AccentTextLight">#FFFFFF</Color>
+    <Color x:Key="DangerLight">#CF222E</Color>
+    <Color x:Key="ScrimLight">#990D1117</Color>
+    <!-- caption strip laid over item art (text on top uses TextPrimary) -->
+    <Color x:Key="OverlayLight">#D9FFFFFF</Color>
+
+    <SolidColorBrush x:Key="BgBrushLight" Color="#F6F8FA" />
+    <SolidColorBrush x:Key="SurfaceBrushLight" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SurfaceHoverBrushLight" Color="#EEF1F5" />
+    <SolidColorBrush x:Key="BorderBrushLight" Color="#D0D7DE" />
+    <SolidColorBrush x:Key="AccentBrushLight" Color="#B45F06" />
+    <SolidColorBrush x:Key="ScrimBrushLight" Color="#990D1117" />
+
+    <!-- roulette edge fades: fade into the page background -->
+    <LinearGradientBrush x:Key="ReelFadeLeftLight" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#FFF6F8FA" Offset="0" />
+        <GradientStop Color="#00F6F8FA" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ReelFadeRightLight" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#00F6F8FA" Offset="0" />
+        <GradientStop Color="#FFF6F8FA" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- ===== Dark (GitHub-style, modelled on zzz.analytics.moe) ===== -->
+    <Color x:Key="BgDark">#0D1117</Color>
+    <Color x:Key="SurfaceDark">#161B22</Color>
+    <Color x:Key="SurfaceHoverDark">#1C2330</Color>
+    <Color x:Key="BorderDark">#30363D</Color>
+    <Color x:Key="TextPrimaryDark">#E6EDF3</Color>
+    <Color x:Key="TextMutedDark">#8B949E</Color>
+    <Color x:Key="AccentDark">#F5A524</Color>
+    <Color x:Key="AccentTextDark">#1A1204</Color>
+    <Color x:Key="DangerDark">#F85149</Color>
+    <Color x:Key="ScrimDark">#CC010409</Color>
+    <Color x:Key="OverlayDark">#80000000</Color>
+
+    <SolidColorBrush x:Key="BgBrushDark" Color="#0D1117" />
+    <SolidColorBrush x:Key="SurfaceBrushDark" Color="#161B22" />
+    <SolidColorBrush x:Key="SurfaceHoverBrushDark" Color="#1C2330" />
+    <SolidColorBrush x:Key="BorderBrushDark" Color="#30363D" />
+    <SolidColorBrush x:Key="AccentBrushDark" Color="#F5A524" />
+    <SolidColorBrush x:Key="ScrimBrushDark" Color="#CC010409" />
+
+    <LinearGradientBrush x:Key="ReelFadeLeftDark" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#FF0D1117" Offset="0" />
+        <GradientStop Color="#000D1117" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ReelFadeRightDark" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#000D1117" Offset="0" />
+        <GradientStop Color="#FF0D1117" Offset="1" />
+    </LinearGradientBrush>
+
+</ResourceDictionary>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CaseOpener.ViewModels"
+             xmlns:models="clr-namespace:CaseOpener.Models"
+             xmlns:conv="clr-namespace:CaseOpener.Converters"
+             x:Class="CaseOpener.Views.CasePreviewView"
+             x:DataType="vm:CasePreviewViewModel">
+
+    <ContentView.Resources>
+        <conv:RarityToBrushConverter x:Key="RarityBrush" />
+        <conv:RarityToColorConverter x:Key="RarityColor" />
+        <conv:RarityToGlowConverter x:Key="RarityGlow" />
+        <conv:StringToBoolConverter x:Key="HasText" />
+    </ContentView.Resources>
+
+    <Grid>
+        <!-- Scrim: tapping outside the panel closes the preview -->
+        <BoxView Color="{AppThemeBinding Light={StaticResource ScrimLight}, Dark={StaticResource ScrimDark}}">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseCommand}" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <!-- Panel -->
+        <!-- Size is set in code-behind (UpdatePanelSize): Fill + MaximumWidthRequest clips the
+             right edge when the window is much wider than the maximum. -->
+        <Border x:Name="Panel" Style="{StaticResource TileBorder}" Padding="0"
+                HorizontalOptions="Center" VerticalOptions="Center"
+                WidthRequest="680" HeightRequest="600">
+
+            <Grid RowDefinitions="Auto,*,Auto">
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Padding="20,18" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16"
+                      Background="{Binding TopRarity, Converter={StaticResource RarityGlow}}">
+                    <Label Text="📦" FontSize="44" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="{Binding Name}" Style="{StaticResource PageTitle}" FontSize="22" />
+                        <Label Text="{Binding ItemCountText}" Style="{StaticResource Muted}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="2" Text="✕" Command="{Binding CloseCommand}"
+                            BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                            FontSize="20" WidthRequest="44" HeightRequest="44" VerticalOptions="Start" />
+                </Grid>
+
+                <!-- What can drop, grouped by rarity -->
+                <CollectionView Grid.Row="1" ItemsSource="{Binding Groups}" IsGrouped="True"
+                                SelectionMode="None" Margin="20,0">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="3"
+                                         HorizontalItemSpacing="10" VerticalItemSpacing="10" />
+                    </CollectionView.ItemsLayout>
+
+                    <CollectionView.GroupHeaderTemplate>
+                        <DataTemplate x:DataType="vm:RarityGroup">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Padding="0,18,0,8">
+                                <BoxView WidthRequest="4" HeightRequest="16" CornerRadius="2" VerticalOptions="Center"
+                                         Color="{Binding Rarity, Converter={StaticResource RarityColor}}" />
+                                <Label Grid.Column="1" Text="{Binding Name}" FontAttributes="Bold" FontSize="14"
+                                       TextColor="{Binding Rarity, Converter={StaticResource RarityColor}}" />
+                                <Label Grid.Column="2" Text="{Binding ChanceText}" Style="{StaticResource Muted}" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.GroupHeaderTemplate>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:SkinItem">
+                            <Border Style="{StaticResource TileBorder}" Padding="0"
+                                    Stroke="{Binding Rarity, Converter={StaticResource RarityBrush}}">
+                                <Grid RowDefinitions="76,Auto"
+                                      Background="{Binding Rarity, Converter={StaticResource RarityGlow}}">
+                                    <Label Text="🔫" FontSize="30" HorizontalOptions="Center"
+                                           VerticalOptions="Center" Opacity="0.85" />
+                                    <Image Source="{Binding ImageFile}" Aspect="AspectFit" Margin="8" />
+                                    <VerticalStackLayout Grid.Row="1" Padding="8,6,8,8" Spacing="1"
+                                                         BackgroundColor="{AppThemeBinding Light={StaticResource OverlayLight}, Dark={StaticResource OverlayDark}}">
+                                        <Label Text="{Binding Weapon}" Style="{StaticResource Muted}"
+                                               FontSize="11" MaxLines="1" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding Finish}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                               FontAttributes="Bold" FontSize="12" MaxLines="1"
+                                               LineBreakMode="TailTruncation" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Footer: open button -->
+                <VerticalStackLayout Grid.Row="2" Padding="20,14,20,20" Spacing="8"
+                                     BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}">
+                    <Label Text="{Binding Hint}" TextColor="{AppThemeBinding Light={StaticResource DangerLight}, Dark={StaticResource DangerDark}}" FontSize="12"
+                           HorizontalTextAlignment="Center"
+                           IsVisible="{Binding Hint, Converter={StaticResource HasText}}" />
+                    <Button Text="{Binding OpenButtonText}" Command="{Binding OpenCaseCommand}"
+                            Style="{StaticResource PrimaryButton}" />
+                    <Label Text="{Binding Balance, StringFormat='Balance: ◆ {0:N0}'}"
+                           Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Roulette (covers the whole panel while spinning) -->
+                <Grid Grid.RowSpan="3" IsVisible="{Binding IsSpinning}" BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}">
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="18">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="OPENING" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                            <Label Text="{Binding Name}" Style="{StaticResource PageTitle}" FontSize="20"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <Grid x:Name="ReelViewport" HeightRequest="170" IsClippedToBounds="True"
+                              BackgroundColor="{AppThemeBinding Light={StaticResource BgLight}, Dark={StaticResource BgDark}}">
+
+                            <HorizontalStackLayout x:Name="Reel" Spacing="8" Padding="0,10"
+                                                   HorizontalOptions="Start" VerticalOptions="Center"
+                                                   BindableLayout.ItemsSource="{Binding ReelItems}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="models:SkinItem">
+                                        <Border WidthRequest="150" HeightRequest="150" Padding="0"
+                                                StrokeShape="RoundRectangle 10" StrokeThickness="1"
+                                                Stroke="{AppThemeBinding Light={StaticResource BorderBrushLight}, Dark={StaticResource BorderBrushDark}}"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}">
+                                            <Grid RowDefinitions="*,Auto"
+                                                  Background="{Binding Rarity, Converter={StaticResource RarityGlow}}">
+                                                <Label Text="🔫" FontSize="42" HorizontalOptions="Center"
+                                                       VerticalOptions="Center" Opacity="0.85" />
+                                                <Image Source="{Binding ImageFile}" Aspect="AspectFit" Margin="10" />
+                                                <VerticalStackLayout Grid.Row="1" Padding="8,6,8,10" Spacing="1"
+                                                                     BackgroundColor="{AppThemeBinding Light={StaticResource OverlayLight}, Dark={StaticResource OverlayDark}}">
+                                                    <Label Text="{Binding Weapon}" Style="{StaticResource Muted}"
+                                                           FontSize="11" MaxLines="1" LineBreakMode="TailTruncation" />
+                                                    <Label Text="{Binding Finish}" FontAttributes="Bold" FontSize="12"
+                                                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" MaxLines="1"
+                                                           LineBreakMode="TailTruncation" />
+                                                </VerticalStackLayout>
+                                                <BoxView Grid.RowSpan="2" HeightRequest="4" VerticalOptions="End"
+                                                         Color="{Binding Rarity, Converter={StaticResource RarityColor}}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </HorizontalStackLayout>
+
+                            <!-- Edge fades -->
+                            <BoxView WidthRequest="90" HorizontalOptions="Start" InputTransparent="True"
+                                     Background="{AppThemeBinding Light={StaticResource ReelFadeLeftLight}, Dark={StaticResource ReelFadeLeftDark}}" />
+                            <BoxView WidthRequest="90" HorizontalOptions="End" InputTransparent="True"
+                                     Background="{AppThemeBinding Light={StaticResource ReelFadeRightLight}, Dark={StaticResource ReelFadeRightDark}}" />
+
+                            <!-- Centre pointer -->
+                            <BoxView WidthRequest="3" HorizontalOptions="Center" InputTransparent="True"
+                                     Color="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}" />
+                            <Label Text="▼" TextColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}" FontSize="14"
+                                   HorizontalOptions="Center" VerticalOptions="Start" InputTransparent="True" />
+                            <Label Text="▲" TextColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}" FontSize="14"
+                                   HorizontalOptions="Center" VerticalOptions="End" InputTransparent="True" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Drop result (covers the whole panel once the case is opened) -->
+                <Grid Grid.RowSpan="3" IsVisible="{Binding HasResult}" BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}"
+                      RowDefinitions="*,Auto" Padding="24">
+                    <VerticalStackLayout VerticalOptions="Center" Spacing="14">
+                        <Label Text="YOU GOT" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                        <Border Style="{StaticResource TileBorder}" HeightRequest="190" WidthRequest="300"
+                                Stroke="{Binding ResultRarity, Converter={StaticResource RarityBrush}}"
+                                StrokeThickness="2" Padding="0">
+                            <Grid Background="{Binding ResultRarity, Converter={StaticResource RarityGlow}}">
+                                <Label Text="🔫" FontSize="72" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                        <Label Text="{Binding ResultTitle}" FontSize="22" FontAttributes="Bold"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{Binding ResultRarity, Converter={StaticResource RarityColor}}" />
+                        <Label Text="{Binding ResultSubtitle}" Style="{StaticResource Muted}"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Button Text="Back to case" Command="{Binding DismissResultCommand}"
+                                Style="{StaticResource GhostButton}" />
+                        <Button Grid.Column="1" Text="{Binding OpenButtonText}"
+                                Command="{Binding OpenCaseCommand}"
+                                Style="{StaticResource PrimaryButton}" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentView>

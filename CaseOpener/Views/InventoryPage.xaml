@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CaseOpener.ViewModels"
+             xmlns:models="clr-namespace:CaseOpener.Models"
+             xmlns:conv="clr-namespace:CaseOpener.Converters"
+             x:Class="CaseOpener.Views.InventoryPage"
+             x:DataType="vm:InventoryViewModel"
+             Title="Inventory"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BgLight}, Dark={StaticResource BgDark}}"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <conv:RarityToBrushConverter x:Key="RarityBrush" />
+        <conv:RarityToColorConverter x:Key="RarityColor" />
+        <conv:RarityToGlowConverter x:Key="RarityGlow" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="16" Padding="24,20,24,0">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Inventory" Style="{StaticResource PageTitle}" />
+                <Label Text="{Binding CountText}" Style="{StaticResource Muted}" />
+            </VerticalStackLayout>
+
+            <Border Grid.Column="1" Style="{StaticResource ChipBorder}" VerticalOptions="Start"
+                    Stroke="{AppThemeBinding Light={StaticResource AccentBrushLight}, Dark={StaticResource AccentBrushDark}}">
+                <Label Text="{Binding BalanceText}" TextColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
+                       FontAttributes="Bold" FontSize="16" />
+            </Border>
+        </Grid>
+
+        <!-- Search, sort, rarity filters -->
+        <VerticalStackLayout Grid.Row="1" Spacing="12">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <Border Style="{StaticResource ChipBorder}" Padding="16,0">
+                    <Entry Placeholder="Search skins or cases…" Text="{Binding SearchText}"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                           PlaceholderColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"
+                           BackgroundColor="Transparent" />
+                </Border>
+                <Button Grid.Column="1" Text="{Binding SortLabel}" Command="{Binding ToggleSortCommand}"
+                        Style="{StaticResource GhostButton}" HeightRequest="44" Padding="18,0" />
+                <Button Grid.Column="2" Text="{Binding SellAllText}" Command="{Binding SellAllShownCommand}"
+                        IsVisible="{Binding HasItems}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}" TextColor="{AppThemeBinding Light={StaticResource AccentTextLight}, Dark={StaticResource AccentTextDark}}"
+                        FontAttributes="Bold" CornerRadius="12" HeightRequest="44" Padding="18,0" />
+            </Grid>
+
+            <CollectionView ItemsSource="{Binding Filters}" HeightRequest="42" SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:RarityFilterViewModel">
+                        <Border Style="{StaticResource ChipBorder}">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource AccentBrushLight}, Dark={StaticResource AccentBrushDark}}" />
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:InventoryViewModel}}, x:DataType=vm:InventoryViewModel, Path=SelectFilterCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding Label}" FontSize="13" FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource AccentTextLight}, Dark={StaticResource AccentTextDark}}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <!-- Owned items -->
+        <CollectionView x:Name="ItemGrid" Grid.Row="2" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="5"
+                                 HorizontalItemSpacing="14" VerticalItemSpacing="14" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.Footer>
+                <BoxView HeightRequest="24" Color="Transparent" />
+            </CollectionView.Footer>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:InventoryItem">
+                    <Border Padding="0" StrokeShape="RoundRectangle 14" StrokeThickness="1.5"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}"
+                            Stroke="{Binding Rarity, Converter={StaticResource RarityBrush}}">
+                        <Grid RowDefinitions="130,Auto">
+                            <Grid Grid.Row="0" Background="{Binding Rarity, Converter={StaticResource RarityGlow}}">
+                                <Label Text="🔫" FontSize="46" HorizontalOptions="Center"
+                                       VerticalOptions="Center" Opacity="0.85" />
+                                <Image Source="{Binding Item.ImageFile}" Aspect="AspectFit" Margin="14" />
+
+                                <Border IsVisible="{Binding StatTrak}" HorizontalOptions="End" VerticalOptions="Start"
+                                        Margin="8" Padding="7,3" StrokeThickness="0"
+                                        BackgroundColor="#CC000000" StrokeShape="RoundRectangle 6">
+                                    <!-- Fixed colour: the badge is always dark, in both themes -->
+                                    <Label Text="StatTrak™" FontSize="10" FontAttributes="Bold"
+                                           TextColor="#F5A524" />
+                                </Border>
+
+                                <BoxView HeightRequest="3" VerticalOptions="End"
+                                         Color="{Binding Rarity, Converter={StaticResource RarityColor}}" />
+                            </Grid>
+
+                            <VerticalStackLayout Grid.Row="1" Padding="12,10,12,12" Spacing="3">
+                                <Label Text="{Binding Item.Weapon}" Style="{StaticResource Muted}"
+                                       MaxLines="1" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding Item.Finish}" FontSize="15" FontAttributes="Bold"
+                                       TextColor="{Binding Rarity, Converter={StaticResource RarityColor}}"
+                                       MaxLines="1" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding Subtitle}" Style="{StaticResource Muted}"
+                                       FontSize="11" MaxLines="1" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding FromText}" Style="{StaticResource Muted}"
+                                       FontSize="11" Opacity="0.7" MaxLines="1" LineBreakMode="TailTruncation" />
+                                <Button Text="{Binding SellText}"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:InventoryViewModel}}, x:DataType=vm:InventoryViewModel, Path=SellCommand}"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="Transparent" BorderColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
+                                        BorderWidth="1" TextColor="{AppThemeBinding Light={StaticResource AccentLight}, Dark={StaticResource AccentDark}}"
+                                        FontSize="12" FontAttributes="Bold" CornerRadius="8"
+                                        HeightRequest="36" Padding="0" Margin="0,8,0,0" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Empty state is a separate overlay (not CollectionView.EmptyView, which can fail to
+             switch back to the items on Windows). -->
+        <VerticalStackLayout Grid.Row="2" IsVisible="{Binding IsEmpty}" InputTransparent="True"
+                             VerticalOptions="Start" HorizontalOptions="Center" Spacing="6" Padding="0,60">
+            <Label Text="🎒" FontSize="54" HorizontalOptions="Center" Opacity="0.7" />
+            <Label Text="Nothing here yet" Style="{StaticResource CardTitle}" FontSize="18"
+                   HorizontalOptions="Center" />
+            <Label Text="Open a case in the Store tab and your drops will show up here."
+                   Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
